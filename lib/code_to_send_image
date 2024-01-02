@@ -1,0 +1,41 @@
+// Send image to backend using HTTP POST request
+      Uri url = Uri.parse('http://10.101.100.22:5000/api/data'); // Replace with your backend endpoint
+
+      var request = http.MultipartRequest('POST', url)
+        ..fields['Query'] = _textEditingController.text
+        ..files.add(http.MultipartFile(
+          'image',
+          _image!.readAsBytes().asStream(),
+          _image!.lengthSync(),
+          filename: 'image.jpg',
+        ));
+
+      try {
+        var response = await request.send();
+        if (response.statusCode == 200) {
+          print('Image successfully uploaded.');
+
+          // Read and decode the response body
+          String responseBody = await response.stream.bytesToString();
+          final Map<String, dynamic> data = json.decode(responseBody);
+          final String message = data['message'];
+          final String modelPath = data['Query'];
+
+          // Display the message in the terminal
+          print('Message from response: $message');
+          print('the path of the model is : $modelPath');
+
+
+          // Display the 3D model
+          //_display3DModel(modelPath);
+
+          // Handle success, e.g., update UI or show a success message
+        } else {
+          print('Failed to upload image. Status code: ${response.statusCode}');
+          print(await response.stream.bytesToString());
+          // Handle error, e.g., show an error message
+        }
+      } catch (error) {
+        print('Error uploading image: $error');
+        // Handle error, e.g., show an error message
+      }
